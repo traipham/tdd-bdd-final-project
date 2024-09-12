@@ -201,7 +201,8 @@ class Product(db.Model):
 
         """
         logger.info("Processing name query for %s ...", name)
-        return cls.query.filter(cls.name == name)
+        query_w_filter = cls.query.filter(cls.name == name)
+        return query_w_filter.all()
 
     @classmethod
     def find_by_price(cls, price: Decimal) -> list:
@@ -218,7 +219,8 @@ class Product(db.Model):
         price_value = price
         if isinstance(price, str):
             price_value = Decimal(price.strip(' "'))
-        return cls.query.filter(cls.price == price_value)
+        query_w_filter = cls.query.filter(cls.price == price_value)
+        return query_w_filter.all()
 
     @classmethod
     def find_by_availability(cls, available: bool = True) -> list:
@@ -232,7 +234,8 @@ class Product(db.Model):
 
         """
         logger.info("Processing available query for %s ...", available)
-        return cls.query.filter(cls.available == available)
+        query_w_filter = cls.query.filter(cls.available == available)
+        return query_w_filter.all()
 
     @classmethod
     def find_by_category(cls, category: Category = Category.UNKNOWN) -> list:
@@ -246,4 +249,5 @@ class Product(db.Model):
 
         """
         logger.info("Processing category query for %s ...", category.name)
-        return cls.query.filter(cls.category == category)
+        query_w_filter = cls.query.filter(cls.category == category)
+        return query_w_filter.all()
