@@ -166,6 +166,81 @@ class TestProductRoutes(TestCase):
     #
     # ADD YOUR TEST CASES HERE
     #
+    def test_read_a_product(self):
+        """Test reading a product with routes"""
+        response_fail = self.client.get(f"{BASE_URL}/12", json=dict())
+        self.assertEqual(response_fail.status_code, status.HTTP_404_NOT_FOUND)
+        product = self._create_products()[0]
+        response_pass = self.client.get(f"{BASE_URL}/{product.id}")
+        logging.debug(f"response success: {response_pass}")
+        self.assertEqual(response_pass.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_pass.get_json(), product.serialize())
+
+    def test_update_a_proudct(self):
+        """Test update a product with routes"""
+        # Sad flow
+        response_fail = self.client.put(f"{BASE_URL}/2", json=dict())
+        self.assertEqual(response_fail.status_code, status.HTTP_404_NOT_FOUND)
+        # Happy flow
+        product = self._create_products()[0]
+        product_2 = self._create_products()[0]
+        product_dict_2 = product_2.serialize()
+        product_dict_2.pop("id")
+        response_pass = self.client.put(f"{BASE_URL}/{product.id}", json=product_dict_2)
+        self.assertEqual(response_pass.status_code, status.HTTP_200_OK)
+        response_get_update = self.client.get(f"{BASE_URL}/{product.id}")
+        self.assertEqual(response_pass.get_json(), response_get_update.get_json())
+
+    def test_delete_a_product(self):
+        """Test delete a product"""
+        # Sad flow
+        response_fail = self.client.delete(f"{BASE_URL}/2")
+        self.assertEqual(response_fail.status_code, status.HTTP_404_NOT_FOUND)
+        # Happy flow
+        product = self._create_products()[0]
+        response_pass = self.client.delete(f"{BASE_URL}/{product.id}")
+        self.assertEqual(response_pass.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_list_all_products(self):
+        """Test list all products with route"""
+        # Sad flow
+        response_fail = self.client.post(BASE_URL, json=dict())
+        self.assertEqual(response_fail.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        # Happy flow
+        product = self._create_products()[0]
+        response_pass = self.client.get(BASE_URL, json=dict())
+        self.assertEqual(response_pass.status_code, status.HTTP_200_OK)
+
+    def test_list_by_name(self):
+        """Test list product by name with route"""
+        # Sad flow
+        response_fail = self.client.get(BASE_URL, json=dict(name=None))
+        self.assertEqual(response_fail.status_code, status.HTTP_404_NOT_FOUND)
+        # Happy flow
+        product = self._create_products()[0]
+        response_pass = self.client.get(BASE_URL, json=dict(name=product.name))
+        self.assertEqual(response_pass.status_code, status.HTTP_200_OK)
+
+    def test_list_by_category(self):
+        """Test list products by category with route"""
+        # Sad flow
+        response_fail = self.client.get(BASE_URL, json=dict(category=None))
+        self.assertEqual(response_fail.status_code, status.HTTP_404_NOT_FOUND)
+        # Happy flow
+        product = self._create_products()[0]
+        response_pass = self.client.get(BASE_URL, json=dict(category=product.category))
+        self.assertEqual(response_pass.status_code, status.HTTP_200_OK)
+
+    def test_list_by_availability(self):
+        """Test list products by availability with route"""
+        # Sad flow
+        response_fail = self.client.get(BASE_URL, json=dict(availabile=None))
+        self.assertEqual(response_fail.status_code, status.HTTP_404_NOT_FOUND)
+        # Happy flow
+        product = self._create_products()[0]
+        response_pass = self.client.get(BASE_URL, json=dict(availabile=product.availabile))
+        self.assertEqual(response_pass.status_code, status.HTTP_200_OK)
+
 
     ######################################################################
     # Utility functions
