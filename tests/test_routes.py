@@ -204,32 +204,39 @@ class TestProductRoutes(TestCase):
     def test_list_all_products(self):
         """Test list all products with route"""
         # Sad flow
-        response_fail = self.client.post(BASE_URL, json=dict())
-        self.assertEqual(response_fail.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        response_fail = self.client.get(f"{BASE_URL}")
+        self.assertEqual(response_fail.status_code, status.HTTP_404_NOT_FOUND)
         # Happy flow
-        product = self._create_products()[0]
-        response_pass = self.client.get(BASE_URL, json=dict())
+        self._create_products(5)
+        response_pass = self.client.get(f"{BASE_URL}")
         self.assertEqual(response_pass.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_pass.get_json()), 5)
 
     def test_list_by_name(self):
         """Test list product by name with route"""
         # Sad flow
-        response_fail = self.client.get(BASE_URL, json=dict(name=None))
+        response_fail = self.client.get(BASE_URL, query_string=f"name=none")
         self.assertEqual(response_fail.status_code, status.HTTP_404_NOT_FOUND)
         # Happy flow
-        product = self._create_products()[0]
-        response_pass = self.client.get(BASE_URL, json=dict(name=product.name))
+        products = self._create_products(5)
+        name = products[0].name
+        products_w_name_count = len([prod for prod in products if prod.name == name])
+        response_pass = self.client.get(BASE_URL, query_string=f"name={name}")
         self.assertEqual(response_pass.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_pass.get_json()), products_w_name_count)
 
     def test_list_by_category(self):
         """Test list products by category with route"""
         # Sad flow
-        response_fail = self.client.get(BASE_URL, json=dict(category=None))
+        response_fail = self.client.get(BASE_URL)
         self.assertEqual(response_fail.status_code, status.HTTP_404_NOT_FOUND)
         # Happy flow
-        product = self._create_products()[0]
-        response_pass = self.client.get(BASE_URL, json=dict(category=product.category))
+        products = self._create_products(5)
+        category = products[0].category
+        products_w_category_count = len([prod for prod in products if prod.category == category])
+        response_pass = self.client.get(BASE_URL, query_string=f"category={category.name}")
         self.assertEqual(response_pass.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_pass.get_json()), products_w_category_count)
 
     def test_list_by_availability(self):
         """Test list products by availability with route"""

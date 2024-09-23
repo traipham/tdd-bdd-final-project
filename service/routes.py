@@ -20,7 +20,7 @@ Product Store Service with UI
 """
 from flask import jsonify, request, abort
 from flask import url_for  # noqa: F401 pylint: disable=unused-import
-from service.models import Product
+from service.models import Product, Category
 from service.common import status  # HTTP Status Codes
 from . import app
 
@@ -101,6 +101,34 @@ def create_products():
 #
 # PLACE YOUR CODE TO LIST ALL PRODUCTS HERE
 #
+@app.route("/products", methods=["GET"])
+def list_products():
+    products = []
+    name = request.args.get("name")
+    category = request.args.get("category")
+
+    if name:
+        app.logger.info(f"Getting products with name: {name}")
+        products = Product.find_by_name(name)
+    elif category:
+        app.logger.info(f"Getting products with category: {category.upper()}")
+        category_real = getattr(Category, category)
+        products = Product.find_by_category(category_real)
+    else:
+        products = Product.all()
+
+
+    if not products:
+        app.logger.error("Product can not be found for id %s", str())
+        abort(status.HTTP_404_NOT_FOUND, "Product can not be found")
+
+
+    product_json = [prod.serialize() for prod in products]
+
+    app.logger.info(f"We've found {len(product_json)}!")
+
+    return jsonify(product_json), status.HTTP_200_OK
+
 
 ######################################################################
 # R E A D   A   P R O D U C T
