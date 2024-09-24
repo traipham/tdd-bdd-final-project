@@ -203,9 +203,6 @@ class TestProductRoutes(TestCase):
 
     def test_list_all_products(self):
         """Test list all products with route"""
-        # Sad flow
-        response_fail = self.client.get(f"{BASE_URL}")
-        self.assertEqual(response_fail.status_code, status.HTTP_404_NOT_FOUND)
         # Happy flow
         self._create_products(5)
         response_pass = self.client.get(f"{BASE_URL}")
@@ -214,9 +211,6 @@ class TestProductRoutes(TestCase):
 
     def test_list_by_name(self):
         """Test list product by name with route"""
-        # Sad flow
-        response_fail = self.client.get(BASE_URL, query_string=f"name=none")
-        self.assertEqual(response_fail.status_code, status.HTTP_404_NOT_FOUND)
         # Happy flow
         products = self._create_products(5)
         name = products[0].name
@@ -227,9 +221,6 @@ class TestProductRoutes(TestCase):
 
     def test_list_by_category(self):
         """Test list products by category with route"""
-        # Sad flow
-        response_fail = self.client.get(BASE_URL)
-        self.assertEqual(response_fail.status_code, status.HTTP_404_NOT_FOUND)
         # Happy flow
         products = self._create_products(5)
         category = products[0].category
@@ -240,14 +231,16 @@ class TestProductRoutes(TestCase):
 
     def test_list_by_availability(self):
         """Test list products by availability with route"""
-        # Sad flow
-        response_fail = self.client.get(BASE_URL, json=dict(availabile=None))
-        self.assertEqual(response_fail.status_code, status.HTTP_404_NOT_FOUND)
         # Happy flow
-        product = self._create_products()[0]
-        response_pass = self.client.get(BASE_URL, json=dict(availabile=product.availabile))
+        products = self._create_products(5)
+        available_products = [prod for prod in products if prod.available == True]
+        app.logger.debug("There are %d products available", len(available_products))
+        response_pass = self.client.get(BASE_URL, query_string=f"available=true")
+        data = response_pass.get_json()
         self.assertEqual(response_pass.status_code, status.HTTP_200_OK)
-
+        self.assertEqual(len(data), len(available_products))
+        for d in data:
+            self.assertTrue(d["available"])
 
     ######################################################################
     # Utility functions

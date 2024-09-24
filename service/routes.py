@@ -106,6 +106,7 @@ def list_products():
     products = []
     name = request.args.get("name")
     category = request.args.get("category")
+    available = request.args.get("available")
 
     if name:
         app.logger.info(f"Getting products with name: {name}")
@@ -114,12 +115,15 @@ def list_products():
         app.logger.info(f"Getting products with category: {category.upper()}")
         category_real = getattr(Category, category)
         products = Product.find_by_category(category_real)
+    elif available:
+        app.logger.info(f"Getting products with availability: {available}")
+        products = Product.find_by_availability(available.lower() == 'true')
     else:
         products = Product.all()
 
 
     if not products:
-        app.logger.error("Product can not be found for id %s", str())
+        app.logger.error("Product(s) can not be found")
         abort(status.HTTP_404_NOT_FOUND, "Product can not be found")
 
 
